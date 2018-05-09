@@ -34,9 +34,18 @@ module Git
           def shas
             prepare_project
 
-            result, _status = shell.capture2e %(git log --pretty=format:"%H" origin/master..#{name})
-            result.split("\n")
+            klass = self.class
+            if klass.pull_request_branch.empty?
+              # case 2: branch
+              result, _status = shell.capture2e %(git log --pretty=format:"%H" origin/master..#{klass.ci_branch})
+              result.split("\n")
+            else
+              # case 1: pull request
+              result, _status = shell.capture2e %(git log --pretty=format:"%H" origin/#{klass.ci_branch}..#{klass.pull_request_branch})
+              result.split("\n")
+            end
           end
+
 
           private
 
